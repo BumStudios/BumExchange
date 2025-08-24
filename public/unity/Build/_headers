@@ -1,0 +1,33 @@
+/*  
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=0, must-revalidate
+  Content-Security-Policy: default-src * data: blob: 'unsafe-inline' 'unsafe-eval'
+
+/Build/* 
+  Cache-Control: public, max-age=0, must-revalidate
+
+/Build/*.gz
+  Content-Encoding: gzip
+
+/Build/*.br
+  Content-Encoding: br
+
+/Build/*.js.gz
+  Content-Encoding: gzip
+  Content-Type: application/javascript
+
+/Build/*.framework.js.gz
+  Content-Encoding: gzip
+  Content-Type: application/javascript
+
+/Build/*.loader.js.gz
+  Content-Encoding: gzip
+  Content-Type: application/javascript
+
+/Build/*.wasm.gz
+  Content-Encoding: gzip
+  Content-Type: application/wasm
+
+/Build/*.data.gz
+  Content-Encoding: gzip
+  Content-Type: application/octet-stream

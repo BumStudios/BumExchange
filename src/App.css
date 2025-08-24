@@ -1,0 +1,115 @@
+/* App background */
+.App {
+  background-image: url('./bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Overlay to darken background for text readability */
+.overlay {
+  background-color: rgba(0, 0, 0, 0.65);
+  padding: 40px;
+  border-radius: 16px;
+  text-align: center;
+  width: 90%;
+  max-width: 900px;
+}
+
+/* Title */
+.title {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+/* Welcome text */
+.welcome {
+  margin: 15px 0;
+  font-size: 1.5rem;
+}
+
+/* Info before login */
+.info-text {
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #ddd;
+  margin-bottom: 15px;
+}
+
+/* Buttons */
+.btn {
+  background-color: #4b6cb7;
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  margin: 15px auto;
+  cursor: pointer;
+  font-size: 1.1rem;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #2a4e8c;
+}
+
+/* Donation message */
+.donate-message {
+  margin-top: 10px;
+  font-size: 1rem;
+  color: #ffd700;
+  font-weight: bold;
+}
+
+/* Games section */
+.games-grid {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.game-card {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 20px;
+  width: 200px;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  font-weight: bold;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.game-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px #ffc107;
+}
+
+.coming-soon {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.8s ease forwards;
+}

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Unity WebGL Player | Eternal Rush</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico" />
+    <link rel="stylesheet" href="TemplateData/style.css" />
+
+    <!-- Pi SDK -->
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+        // Initialize Pi SDK
+        Pi.init({
+            version: "2.0",
+            sandbox: true,
+            apiKey: "7pv0clsrsxzn8zvwiww82dc8zvdbbtpujzkgsndtur2eiewrhnrpzq9rlpltt1nt"
+        });
+
+        // Trigger login
+        function piLogin() {
+            Pi.authenticate(["username"], {
+                onIncompletePaymentFound: function (payment) {
+                    console.log("Incomplete payment found", payment);
+                }
+            })
+            .then(function (auth) {
+                console.log("Authenticated", auth);
+                unityInstance.SendMessage("PiBridge", "OnLoginSuccess", JSON.stringify(auth));
+            })
+            .catch(function (error) {
+                console.error("Pi authentication failed", error);
+            });
+        }
+
+        // Trigger Pi donation payment from Unity
+        function startPiPayment(amount) {
+            const parsedAmount = parseFloat(amount);
+            if (isNaN(parsedAmount) || parsedAmount <= 0) {
+                console.error("Invalid amount passed to startPiPayment:", amount);
+                return;
+            }
+
+            Pi.createPayment({
+                amount: parsedAmount,
+                memo: "Donation in Eternal Rush",
+                metadata: { purpose: "donation" }
+            }, {
+                onReadyForServerApproval: function (paymentId) {
+                    console.log("Ready for server approval", paymentId);
+                    // Optional: send to backend if needed
+                },
+                onReadyForServerCompletion: function (paymentId, txid) {
+                    console.log("Payment completed:", txid);
+                    unityInstance.SendMessage("Donations", "OnPaymentCompleted", txid);
+                },
+                onCancel: function (paymentId) {
+                    console.warn("Payment canceled", paymentId);
+                    unityInstance.SendMessage("Donations", "OnPaymentError", "canceled");
+                },
+                onError: function (error, paymentId) {
+                    console.error("Payment error", error);
+                    unityInstance.SendMessage("Donations", "OnPaymentError", error.toString());
+                }
+            });
+        }
+
+        // Optional: Show ad before gameplay
+        function Pi_ShowInterstitialAd() {
+            Pi.openInterstitialAd({
+                onClose: () => {
+                    console.log("Ad finished or skipped");
+                    unityInstance.SendMessage("PiBridge", "OnInterstitialComplete");
+                },
+                onError: (err) => {
+                    console.error("Ad error", err);
+                    unityInstance.SendMessage("PiBridge", "OnInterstitialComplete");
+                }
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <div id="unity-container" class="unity-desktop">
+        <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+        <div id="unity-loading-bar">
+            <div id="unity-logo"></div>
+            <div id="unity-progress-bar-empty">
+                <div id="unity-progress-bar-full"></div>
+            </div>
+        </div>
+        <div id="unity-warning"></div>
+        <div id="unity-footer">
+            <div id="unity-webgl-logo"></div>
+            <div id="unity-fullscreen-button"></div>
+            <div id="unity-build-title">Eternal Rush</div>
+        </div>
+    </div>
+
+    <script>
+        var container = document.querySelector("#unity-container");
+        var canvas = document.querySelector("#unity-canvas");
+        var loadingBar = document.querySelector("#unity-loading-bar");
+        var progressBarFull = document.querySelector("#unity-progress-bar-full");
+        var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+        var warningBanner = document.querySelector("#unity-warning");
+
+        function unityShowBanner(msg, type) {
+            var div = document.createElement("div");
+            div.innerHTML = msg;
+            warningBanner.appendChild(div);
+            if (type == "error") div.style = "background: red; padding: 10px;";
+            else if (type == "warning") div.style = "background: yellow; padding: 10px;";
+            setTimeout(() => {
+                warningBanner.removeChild(div);
+                warningBanner.style.display = warningBanner.children.length ? "block" : "none";
+            }, 5000);
+            warningBanner.style.display = "block";
+        }
+
+        var buildUrl = "Build";
+        var loaderUrl = buildUrl + "/webglflyer.loader.js";
+        var config = {
+            dataUrl: buildUrl + "/webglflyer.data.gz",
+            frameworkUrl: buildUrl + "/webglflyer.framework.js.gz",
+            codeUrl: buildUrl + "/webglflyer.wasm.gz",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "Bum Studios",
+            productName: "Eternal Rush",
+            productVersion: "1.0",
+            showBanner: unityShowBanner,
+        };
+
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            var meta = document.createElement("meta");
+            meta.name = "viewport";
+            meta.content = "width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes";
+            document.getElementsByTagName("head")[0].appendChild(meta);
+            container.className = "unity-mobile";
+            canvas.className = "unity-mobile";
+        } else {
+            canvas.style.width = "960px";
+            canvas.style.height = "600px";
+        }
+
+        loadingBar.style.display = "block";
+
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+            createUnityInstance(canvas, config, (progress) => {
+                progressBarFull.style.width = 100 * progress + "%";
+            })
+            .then((unityInstance) => {
+                window.unityInstance = unityInstance;
+                loadingBar.style.display = "none";
+                fullscreenButton.onclick = () => {
+                    unityInstance.SetFullscreen(1);
+                };
+
+                // Trigger login after Unity loads
+                piLogin();
+            })
+            .catch((message) => {
+                alert(message);
+            });
+        };
+        document.body.appendChild(script);
+    </script>
+</body>
+</html>
